@@ -23,20 +23,24 @@ public class FindDuplicatedDirectories {
     }
 
     private static void collectDirectories(File root, Map<String, List<String>> directoriesByName) {
-        for (File file : root.listFiles()) {
-            if (file.isDirectory()) {
-                String name = normalizeDirectoryName(file.getName());
-                if (directoriesByName.containsKey(name)) {
-                    directoriesByName.get(name).add(file.getAbsolutePath());
-                } else {
-                    List<String> paths = new ArrayList<>();
-                    paths.add(file.getAbsolutePath());
-                    directoriesByName.put(name, paths);
+        File[] files = root.listFiles();
+        if (files != null) {
+            for (File file : files) {
+                if (file.isDirectory()) {
+                    String name = normalizeDirectoryName(file.getName());
+                    if (directoriesByName.containsKey(name)) {
+                        directoriesByName.get(name).add(file.getAbsolutePath());
+                    } else {
+                        List<String> paths = new ArrayList<>();
+                        paths.add(file.getAbsolutePath());
+                        directoriesByName.put(name, paths);
+                    }
+                    collectDirectories(file, directoriesByName);
                 }
-                collectDirectories(file, directoriesByName);
             }
         }
     }
+
 
     private static String normalizeDirectoryName(String directoryName) {
         for (String mark : PUNCTUATION_MARKS) {
@@ -48,7 +52,7 @@ public class FindDuplicatedDirectories {
     private static void saveDuplicatesToFile(Map<String, List<String>> directoriesByName, String rootDirectoryPath) {
         try {
             BufferedWriter writer = new BufferedWriter(
-                    new FileWriter(rootDirectoryPath + File.separator + "ZdublowaneKatalogi.txt"));
+                    new FileWriter(rootDirectoryPath + File.separator + "DuplicatedDirectories.txt"));
             for (String name : directoriesByName.keySet()) {
                 List<String> paths = directoriesByName.get(name);
                 if (paths.size() > 1) {
